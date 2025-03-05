@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketinsight-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: marketinsight-backend
+  template:
+    metadata:
+      labels:
+        app: marketinsight-backend
+    spec:
+      containers:
+      - name: marketinsight-backend
+        image: marketinsight-backend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+          limits:
+            memory: "512Mi"
+            cpu: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: marketinsight-backend
+spec:
+  selector:
+    app: marketinsight-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketinsight-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: marketinsight-frontend
+  template:
+    metadata:
+      labels:
+        app: marketinsight-frontend
+    spec:
+      containers:
+      - name: marketinsight-frontend
+        image: marketinsight-frontend:latest
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: marketinsight-frontend
+spec:
+  selector:
+    app: marketinsight-frontend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-report-storage
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-report-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
